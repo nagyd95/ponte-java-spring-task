@@ -18,10 +18,12 @@ public class UploadController
     @RequestMapping(value = "post", method = RequestMethod.POST)
     @ResponseBody
     public String handleFormUpload(@RequestParam("file") MultipartFile file) throws Exception {
-        if(file.getSize() / 1024 > 2048){
-            return "not ok";
+        String returnString;
+        if(file.isEmpty() && file.getSize() / 1024 > 2048){
+            returnString =  "not ok";
+        }else {
+            returnString = imageStore.createImageFromFile(file) ? "ok" : "not ok";
         }
-        imageStore.makeFileFromMultiFile(file);
-        return "ok";
+        return returnString;
     }
 }

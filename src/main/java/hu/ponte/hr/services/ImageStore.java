@@ -10,13 +10,15 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ImageStore {
   private ArrayList<ImageMeta> imageMetaList= new ArrayList<>();
-
+  @Autowired
+  private Environment environment;
   @Autowired
   private SignService signService;
 
@@ -39,15 +41,15 @@ public class ImageStore {
     String digitalSign= makeDigitalSign(fileName);
 
     ImageMeta imageMeta = ImageMeta.builder()
-        .id(id)
-        .name(fileName)
-        .mimeType(type)
-        .size(bytes)
-        .digitalSign(digitalSign)
-        .build();
+            .id(id)
+            .name(fileName)
+            .mimeType(type)
+            .size(bytes)
+            .digitalSign(digitalSign)
+            .build();
 
-     addNewImage(imageMeta);
-     return id;
+    addNewImage(imageMeta);
+    return id;
   }
 
   private String makeDigitalSign(String fileName) {
@@ -60,19 +62,32 @@ public class ImageStore {
     return digitalSign;
   }
 
-  public boolean makeFileFromMultiFile(MultipartFile file) throws IOException {
-    InputStream initialStream = file.getInputStream();
-    byte[] buffer = new byte[initialStream.available()];
-    initialStream.read(buffer);
+  public boolean createImageFromFile(MultipartFile file) throws IOException {
+    String directory = checkDirektoryAndMakeIfNotExists();
     String type = file.getContentType();
-    File targetFile = new File("src/main/resources/public/images/"+file.getOriginalFilename());
-    try (OutputStream outStream = new FileOutputStream(targetFile)) {
-      outStream.write(buffer);
-    }
+    File targetFile= createNewFile(file,directory);
     makeImageMetaFromFile(targetFile,type);
     return true;
   }
   public String makeRandomId(){
     return Long.toString(ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE));
+  }
+  private String checkDirektoryAndMakeIfNotExists(){
+    File directory = new File(environment.getProperty("images.folder"));
+    if(!directory.exists()){
+      directory.mkdir();
+    }
+    return directory.getPath();
+  }
+  private File createNewFile(MultipartFile multipartFile, String directory) throws IOException {
+    InputStream initialStream = multipartFile.getInputStream();
+    byte[] buffer = new byte[initialStream.available()];
+    initialStream.read(buffer);
+    File targetFile = new File(directory+'\\'+multipartFile.getOriginalFilename());
+
+    try (OutputStream outStream = new FileOutputStream(targetFile)) {
+      outStream.write(buffer);
+    }
+    return targetFile;
   }
 }

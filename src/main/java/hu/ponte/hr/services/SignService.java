@@ -10,12 +10,16 @@ import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SignService {
 
-
+  @Autowired
+  Environment environment;
   public  String signSHA256RSA(String input) throws Exception {
     PrivateKey privateKey=getPrivateKeyFromFile();
     byte[] dataBytes  = input.getBytes();
@@ -31,7 +35,7 @@ public class SignService {
 
   private PrivateKey getPrivateKeyFromFile( )
           throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-    byte[] key = Files.readAllBytes(Paths.get("src/main/resources/config/keys/key.private"));
+    byte[] key = Files.readAllBytes(Paths.get(environment.getProperty("private.key")));
 
     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
     PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key);

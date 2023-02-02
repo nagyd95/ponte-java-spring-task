@@ -13,9 +13,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-/**
- * @author zoltan
- */
+
 @RunWith(SpringRunner.class)
 @SpringBootTest()
 public class SignTest
