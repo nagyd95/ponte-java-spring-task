@@ -19,7 +19,7 @@ public class UploadController
     @ResponseBody
     public String handleFormUpload(@RequestParam("file") MultipartFile file) throws Exception {
         String returnString;
-        if(file.isEmpty() && file.getSize() / 1024 > 2048){
+        if(file.isEmpty() || file.getSize() / 1024 > 2048){
             returnString =  "not ok";
         }else {
             returnString = imageStore.createImageFromFile(file) ? "ok" : "not ok";
